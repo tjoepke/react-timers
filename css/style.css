@@ -56,12 +56,13 @@ body, label, input{
     border-color: #00ac71;
 }
 
-.timer-remove{
+.timer-button{
     float: right;
     background: #717171;
     color: #fff;
     padding: 5px;
     margin-top: -5px;
+    margin-left: 5px;
     cursor: pointer;
 }
 

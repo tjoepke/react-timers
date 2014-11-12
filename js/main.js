@@ -20691,26 +20691,78 @@ var React = require('react/addons');
 var Actions = require('../actions/AppActions');
 var Store = require('../stores/AppStore');
 
+
+function fixLeadingZeros(value){
+    if(value === null)
+        return '';
+
+    return value < 10 ? "0" + value : value;
+}
+
+function formatTime(value){
+    if(value === null)
+        return '';
+
+    var hours = parseInt(value / 3600) % 24;
+    var minutes = parseInt(value / 60 ) % 60;
+    var seconds = value % 60;
+
+    return fixLeadingZeros(hours) + ":" + fixLeadingZeros(minutes) + ":" + fixLeadingZeros(seconds);
+}
+
+function formatDate(value){
+    if(value === null)
+        return '';
+
+    return fixLeadingZeros(value.getDate()) + "/" + fixLeadingZeros(value.getMonth() + 1) + "/" + value.getFullYear() + ' '
+                + value.getHours() + ':' + value.getMinutes() + ':' + value.getSeconds();
+}
+
 var Timer = React.createClass({displayName: 'Timer',
+    getInitialState: function(){
+        return {detailsVisible: false};
+    },
     render: function() {
         var classes = React.addons.classSet({
             'timer': true,
             'timer-running': this.props.timer.isRunning
         });
 
-        var hours = parseInt(this.props.timer.elapsed/3600) % 24;
-        var minutes = parseInt( this.props.timer.elapsed / 60 ) % 60;
-        var seconds = this.props.timer.elapsed % 60;
+        var rows = this.props.timer.data.map(function(r){
+            var from = new Date(r.start);
+            var till = r.end ? new Date(r.end) : null;
+            var duration = till ? Math.floor((till - from)/1000) : null;
 
-        var formatted = (hours < 10 ? "0" + hours : hours) + ":"
-                            + (minutes < 10 ? "0" + minutes : minutes) + ":"
-                            + (seconds  < 10 ? "0" + seconds : seconds);
+            return (React.createElement("tr", null, 
+                            React.createElement("td", null, formatDate(from)), 
+                            React.createElement("td", null, formatDate(till)), 
+                            React.createElement("td", null, formatTime(duration))
+                    ));
+        });
 
+        var showhideText = this.state.detailsVisible ? 'hide' : 'show';
         return (
             React.createElement("div", {onClick: this.toggle, className: classes}, 
-                React.createElement("span", {className: "timer-elapsed"}, formatted), 
+                React.createElement("span", {className: "timer-elapsed"}, formatTime(this.props.timer.elapsed)), 
                 React.createElement("span", {className: "timer-description"}, this.props.timer.description), 
-                React.createElement("span", {className: "timer-remove", onClick: this.remove}, "remove")
+                React.createElement("span", {className: "timer-button", onClick: this.remove}, "remove"), 
+                React.createElement("span", {className: "timer-button", onClick: this.toggleDetails}, showhideText), 
+
+                 this.state.detailsVisible
+                    ?  React.createElement("table", null, 
+                        React.createElement("thead", null, 
+                            React.createElement("tr", null, 
+                             React.createElement("th", null, "From"), 
+                             React.createElement("th", null, "Till"), 
+                             React.createElement("th", null, "Duration")
+                          )
+                        ), 
+                        React.createElement("tbody", null, 
+                            rows
+                        )
+                    )
+                    : null
+
             )
         );
     },
@@ -20723,6 +20775,10 @@ var Timer = React.createClass({displayName: 'Timer',
     },
     remove: function(){
         Actions.remove(this.props.timer.guid);
+    },
+    toggleDetails: function(e){
+        e.stopPropagation();
+        this.setState({detailsVisible: !this.state.detailsVisible});
     }
 });
 
