@@ -20686,7 +20686,7 @@ window.onbeforeunload = function () {
 };
 
 module.exports = Timers;
-},{"../components/Timer.react":170,"../components/TimerForm.react":171,"../stores/AppStore":175,"react":167}],170:[function(require,module,exports){
+},{"../components/Timer.react":170,"../components/TimerForm.react":171,"../stores/AppStore":176,"react":167}],170:[function(require,module,exports){
 var React = require('react/addons');
 var Actions = require('../actions/AppActions');
 var Store = require('../stores/AppStore');
@@ -20727,7 +20727,7 @@ var Timer = React.createClass({displayName: 'Timer',
 });
 
 module.exports = Timer;
-},{"../actions/AppActions":168,"../stores/AppStore":175,"react/addons":6}],171:[function(require,module,exports){
+},{"../actions/AppActions":168,"../stores/AppStore":176,"react/addons":6}],171:[function(require,module,exports){
 var React = require('react');
 var Actions = require('../actions/AppActions');
 
@@ -20790,9 +20790,53 @@ React.render(
 
 
 },{"./components/App.react":169,"react":167}],175:[function(require,module,exports){
+if (!Object.assign) {
+  Object.defineProperty(Object, "assign", {
+    enumerable: false,
+    configurable: true,
+    writable: true,
+    value: function(target, firstSource) {
+      "use strict";
+      if (target === undefined || target === null)
+        throw new TypeError("Cannot convert first argument to object");
+
+      var to = Object(target);
+
+      var hasPendingException = false;
+      var pendingException;
+
+      for (var i = 1; i < arguments.length; i++) {
+        var nextSource = arguments[i];
+        if (nextSource === undefined || nextSource === null)
+          continue;
+
+        var keysArray = Object.keys(Object(nextSource));
+        for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
+          var nextKey = keysArray[nextIndex];
+          try {
+            var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+            if (desc !== undefined && desc.enumerable)
+              to[nextKey] = nextSource[nextKey];
+          } catch (e) {
+            if (!hasPendingException) {
+              hasPendingException = true;
+              pendingException = e;
+            }
+          }
+        }
+
+        if (hasPendingException)
+          throw pendingException;
+      }
+      return to;
+    }
+  });
+}
+},{}],176:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter;
 var AppDispatcher = require('../dispatcher/AppDispatcher');
 var AppConstants = require('../constants/AppConstants');
+var utils = require('../polyfill/object-assign');
 
 var CHANGE_EVENT = 'change';
 var STORAGE_NAME = 'timers';
@@ -20801,6 +20845,7 @@ if(!localStorage.getItem(STORAGE_NAME))
     localStorage.setItem(STORAGE_NAME, JSON.stringify({timers:[]}));
 
 var _timers = JSON.parse(localStorage.getItem(STORAGE_NAME));
+var _interval;
 
 function guid(){
     return 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -20808,14 +20853,10 @@ function guid(){
     });
 }
 
-
-var _interval;
 function tick(){
     this.elapsed++;
     AppStore.emitChange();
 }
-
-
 
 function stop(timer){
     if(timer.isRunning){
@@ -20889,7 +20930,5 @@ var AppStore = Object.assign(EventEmitter.prototype, {
     })
 });
 
-
-
 module.exports = AppStore;
-},{"../constants/AppConstants":172,"../dispatcher/AppDispatcher":173,"events":4}]},{},[174])
+},{"../constants/AppConstants":172,"../dispatcher/AppDispatcher":173,"../polyfill/object-assign":175,"events":4}]},{},[174])
