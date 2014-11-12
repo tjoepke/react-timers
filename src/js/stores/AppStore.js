@@ -1,6 +1,7 @@
 var EventEmitter = require('events').EventEmitter;
 var AppDispatcher = require('../dispatcher/AppDispatcher');
 var AppConstants = require('../constants/AppConstants');
+var utils = require('../polyfill/object-assign');
 
 var CHANGE_EVENT = 'change';
 var STORAGE_NAME = 'timers';
@@ -9,6 +10,7 @@ if(!localStorage.getItem(STORAGE_NAME))
     localStorage.setItem(STORAGE_NAME, JSON.stringify({timers:[]}));
 
 var _timers = JSON.parse(localStorage.getItem(STORAGE_NAME));
+var _interval;
 
 function guid(){
     return 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -16,14 +18,10 @@ function guid(){
     });
 }
 
-
-var _interval;
 function tick(){
     this.elapsed++;
     AppStore.emitChange();
 }
-
-
 
 function stop(timer){
     if(timer.isRunning){
@@ -96,7 +94,5 @@ var AppStore = Object.assign(EventEmitter.prototype, {
         return true;
     })
 });
-
-
 
 module.exports = AppStore;
